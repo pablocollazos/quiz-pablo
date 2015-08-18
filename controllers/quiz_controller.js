@@ -17,11 +17,24 @@ exports.load = function(req, res, next, quizId){
 
 // GET /quizes
 exports.index = function(req, res){
-	models.Quiz.findAll()
-	.then(function(quizes){
-		res.render('quizes/index', {quizes: quizes});
-	})
-	.catch(function(error){next(error);});
+	var cadenaBusqueda;
+	if(req.query.search){
+		cadenaBusqueda=(req.query.search||"").replace(" ","%");
+	}else{
+		cadenaBusqueda="";
+	}
+	models.Quiz.findAll(
+		{where:['pregunta like ?','%'+cadenaBusqueda+'%'],order:'pregunta ASC'}
+		).then(function(quizes){
+			res.render('quizes/index',{quizes:quizes});
+		}).catch(function(error){next(error);});
+
+
+	// models.Quiz.findAll()
+	// .then(function(quizes){
+	// 	res.render('quizes/index', {quizes: quizes});
+	// })
+	// .catch(function(error){next(error);});
 }
 
 //GET /quizes/:id
