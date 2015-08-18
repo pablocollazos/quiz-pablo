@@ -24,7 +24,7 @@ exports.index = function(req, res){
 		cadenaBusqueda="";
 	}
 	models.Quiz.findAll(
-		{where:['pregunta like ?','%'+cadenaBusqueda+'%'],order:'pregunta ASC'}
+		{where:['upper(pregunta) like upper(?)','%'+cadenaBusqueda+'%'],order:'pregunta ASC'}
 		).then(function(quizes){
 			res.render('quizes/index',{quizes:quizes});
 		}).catch(function(error){next(error);});
