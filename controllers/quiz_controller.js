@@ -68,3 +68,21 @@ exports.question = function(req, res){
 	//res.render('quizes/question', {pregunta: 'Capital de Italia'});
 };
 
+exports.new = function(req, res){
+	var quiz = models.Quiz.build({pregunta:"Pregunta", respuesta:"Respuesta"});
+	res.render('quizes/new',{quiz:quiz});
+
+}
+
+// POST /quizes/create
+exports.create = function(req, res){
+console.log("------------------------------------------");
+	console.log("Entrando en creación de pregunta");
+console.log("------------------------------------------");
+	var quiz = models.Quiz.build(req.body.quiz);
+	// Guarda en bbdd los campos pregunta y respuesta de quiz
+	quiz.save({fields:["pregunta","respuesta"]}).then(function(){
+		res.redirect('/quizes'); // Redirecciona a la lista de preguntas despues de insertar
+	});
+}
+
