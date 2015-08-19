@@ -26,7 +26,7 @@ exports.index = function(req, res){
 	models.Quiz.findAll(
 		{where:['upper(pregunta) like upper(?)','%'+cadenaBusqueda+'%'],order:'pregunta ASC'}
 		).then(function(quizes){
-			res.render('quizes/index',{quizes:quizes});
+			res.render('quizes/index',{quizes:quizes, errors:[]});
 		}).catch(function(error){next(error);});
 
 
@@ -42,7 +42,7 @@ exports.show = function(req, res){
 	// Ya no necesito hacer la busqueda por id ya que se hace en la
 	// funcion load.
 	// models.Quiz.find(req.params.quizId).then(function(quiz){
-		res.render('quizes/show',{quiz: req.quiz});
+		res.render('quizes/show',{quiz: req.quiz, errors:[]});
 	// });
 }
 
@@ -51,9 +51,9 @@ exports.show = function(req, res){
 exports.answer = function(req, res){
 
 		if (req.query.respuesta === req.quiz.respuesta){
-			res.render('quizes/answer',{quiz: req.quiz, respuesta: 'Correcto!!!'});
+			res.render('quizes/answer',{quiz: req.quiz, respuesta: 'Correcto!!!', errors:[]});
 		}else{
-			res.render('quizes/answer', {quiz: req.quiz, respuesta: 'Incorrecto!!!'})
+			res.render('quizes/answer', {quiz: req.quiz, respuesta: 'Incorrecto!!!', errors:[]})
 		}
 };
 
@@ -61,8 +61,8 @@ exports.answer = function(req, res){
 //GET /quizes/question
 exports.question = function(req, res){
 	// Modificamos para recuperar las preguntas de base de datos
-	models.Quiz.findAll().success(function(quiz){
-		res.render('quizes/question',{pregunta: quiz[0].pregunta});
+	models.Quiz.findAll().then(function(quiz){
+		res.render('quizes/question',{pregunta: quiz[0].pregunta, errors:[]});
 	}); 
 
 	//res.render('quizes/question', {pregunta: 'Capital de Italia'});
@@ -70,19 +70,27 @@ exports.question = function(req, res){
 
 exports.new = function(req, res){
 	var quiz = models.Quiz.build({pregunta:"Pregunta", respuesta:"Respuesta"});
-	res.render('quizes/new',{quiz:quiz});
+	res.render('quizes/new',{quiz:quiz, errors:[]});
 
 }
 
 // POST /quizes/create
 exports.create = function(req, res){
-console.log("------------------------------------------");
-	console.log("Entrando en creación de pregunta");
-console.log("------------------------------------------");
 	var quiz = models.Quiz.build(req.body.quiz);
-	// Guarda en bbdd los campos pregunta y respuesta de quiz
-	quiz.save({fields:["pregunta","respuesta"]}).then(function(){
-		res.redirect('/quizes'); // Redirecciona a la lista de preguntas despues de insertar
-	});
+	quiz.validate().then(
+		function(err){
+			if (err){
+				res.render('quizes/new', {quiz: quiz, errors: err.errors});
+			}else{
+			// Guarda en bbdd los campos pregunta y respuesta de quiz
+				quiz.save({fields:["pregunta","respuesta"]}).then(function(){
+					res.redirect('/quizes'); // Redirecciona a la lista de preguntas despues de insertar
+				});
+			}
+
+		}
+	);
+
+	
 }
 
