@@ -30,6 +30,23 @@ app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+//Practica 9: Control de tiempo de la sesion
+app.use(function(req,res,next){
+    if(req.session.user){ //si el usuario esta logeado
+        if(req.session.user.tiempo){ //si tiene tiempo de inicio asignado
+            if(new Date().getTime()-req.session.user.tiempo>120000){ //si el tiempo excede 2 mins
+                delete req.session.user;  //borra la sesion de usuario
+            }else{
+                req.session.user.tiempo=new Date().getTime(); //reinicia tiempo asignado
+            }; 
+        }else{ //no tiene tiempo asignado
+            req.session.user.tiempo=new Date().getTime(); //asigna tiempo de inicio
+        }
+    }
+    next();
+});
+
 // Helpers dinamicos
 app.use(function(req, res, next){
     // guardar path en session.redir para despues de login
